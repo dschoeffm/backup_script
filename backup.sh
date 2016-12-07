@@ -1,6 +1,4 @@
 #!/bin/bash
-check_time=1480148880
-
 set -x
 
 BACKUP_TMP=${HOME}/.backup_tmp
@@ -24,7 +22,7 @@ recursivterm() {
 			time=$(ls -l --time-style=+%s $d)
 			time=$(echo $time | perl -ne'/\S+ \S+ \S+ \S+ \S+ (\S+)/ && print($1)')
 
-			if [ "$time" -gt "$check_time" ]
+			if [ "$time" -gt "$LAST_DIFF" ]
 			then
 				# `pwd` has leading /
 				mkdir -p ${BACKUP_TMP}/data`pwd`
@@ -74,16 +72,16 @@ NOW=$(date +%s)
 $FULL_BACKUPS_SEC=$(echo "$FULL_BACKUPS * 60" | bc --)
 $DIFF_BACKUPS_SEC=$(echo "$DIFF_BACKUPS * 60" | bc --)
 
-if [ $(($LAST_FULL+$FULL_BACKUPS_SEC)) > $NOW ]
+if [ "$(($LAST_FULL+$FULL_BACKUPS_SEC))" -gt "$NOW" ]
 then
 	$LAST_DIFF=$NOW
 	$LAST_FULL=$NOW
 	SUFFIX=full
 	full_backup
-elif [ $(($LAST_DIFF+$DIFF_BACKUPS_SEC)) > $NOW ]
+elif [ "$(($LAST_DIFF+$DIFF_BACKUPS_SEC))" -gt "$NOW" ]
+	diff_backup
 	$LAST_DIFF=$NOW
 	SUFFIX=diff
-	diff_backup
 else
 	exit 0
 fi
